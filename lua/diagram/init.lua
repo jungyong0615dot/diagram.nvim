@@ -7,7 +7,7 @@ local function open_floating(lines)
 	local win_width = math.ceil(width * 0.9)
 	local row = math.ceil((height - win_height) / 2 - 1)
 	local col = math.ceil((width - win_width) / 2)
-	local buf = vim.api.nvim_create_buf(true, true)
+	local buf = vim.api.nvim_create_buf(false, true)
 
 	vim.o.wrap = false
 	vim.api.nvim_buf_set_lines(buf, 0, -1, false, lines)
