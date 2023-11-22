@@ -23,16 +23,15 @@ local function open_floating(lines)
 end
 
 function SelectCodeFence()
-	local ts_utils = require("nvim-treesitter.ts_utils")
 	local parser = vim.treesitter.get_parser(0)
 	local tree = parser:parse()[1]
 	local root = tree:root()
-	local cursor_row, cursor_col = unpack(vim.api.nvim_win_get_cursor(0))
+	local cursor_row, _ = unpack(vim.api.nvim_win_get_cursor(0))
 
 	cursor_row = cursor_row - 1 -- Lua is 1-indexed, Treesitter is 0-indexed
 
 	local function node_contains_cursor(node)
-		local start_row, start_col, end_row, end_col = node:range()
+		local start_row, _, end_row, _ = node:range()
 		return start_row <= cursor_row and cursor_row <= end_row
 	end
 
