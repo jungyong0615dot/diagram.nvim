@@ -1,5 +1,30 @@
 local M = {}
 
+local function trim(s)
+    return (s:gsub("^%s*(.-)%s*$", "%1"))
+end
+
+local function padTableStrings(tbl)
+    local maxLength = 0
+
+    -- Find the length of the longest string after trimming
+    for _, item in ipairs(tbl) do
+        local trimmedItem = trim(item)
+        if #trimmedItem > maxLength then
+            maxLength = #trimmedItem
+        end
+    end
+
+    -- Pad each string with spaces to make their lengths equal to maxLength
+    for i, item in ipairs(tbl) do
+        local trimmedItem = trim(item)
+        while #trimmedItem < maxLength do
+            trimmedItem = trimmedItem .. " "
+        end
+        tbl[i] = trimmedItem  -- Update the table with the padded string
+    end
+end
+
 local function open_floating(lines)
 	local width = vim.api.nvim_get_option("columns")
 	local height = vim.api.nvim_get_option("lines")
@@ -64,12 +89,21 @@ function SelectCodeFence()
 		local diagram = vim.api.nvim_buf_get_lines(0, start_row + 2, end_row - 1, false)
 		local tempfile = vim.fn.tempname()
 		vim.fn.writefile(diagram, tempfile)
+		local lines = {}
 		vim.fn.jobstart("graph-easy " .. tempfile .. " --boxart", {
 			on_stdout = function(_, data, _)
-				if vim.fn.join(data, "\n") == "" then
-					return
+				for idx, line in ipairs(data) do
+					if #lines > 0 and idx == 1 and line ~= nil then
+						lines[#lines] = lines[#lines] .. line
+					else
+						table.insert(lines, line)
+					end
 				end
-				open_floating(data)
+			end,
+			on_exit = function(_, _, _)
+        -- padTableStrings(lines)
+				open_floating(lines)
+				vim.fn.delete(tempfile)
 			end,
 		})
 	end
